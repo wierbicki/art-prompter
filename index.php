@@ -1,4 +1,3 @@
-
 <?php
 // Definiere verfügbare Optionen
 $formats = [
@@ -18,7 +17,8 @@ $styles = [
     'Gotik' => ['icon' => '⛪', 'class' => 'gotik'],
     'Futurismus' => ['icon' => '🚀', 'class' => 'futurismus'],
     'Cyberpunk' => ['icon' => '🤖', 'class' => 'cyberpunk'],
-    'Popart' => ['icon' => '🎭', 'class' => 'popart']
+    'Popart' => ['icon' => '🎭', 'class' => 'popart'],
+    'Nihonga' => ['icon' => '🗾', 'class' => 'nihonga']
 ];
 
 $techniques = [
@@ -33,7 +33,19 @@ $techniques = [
     'Collage' => ['icon' => '📰', 'class' => 'collage'],
     'Spraypaint' => ['icon' => '🎯', 'class' => 'spraypaint'],
     'Siebdruck' => ['icon' => '🖨️', 'class' => 'siebdruck'],
-    'Digital Painting' => ['icon' => '💻', 'class' => 'digital']
+    'Digital Painting' => ['icon' => '💻', 'class' => 'digital'],
+    'Mineralfarben' => ['icon' => '⛏️', 'class' => 'mineralfarben']
+];
+
+// Empfohlene Techniken pro Stil
+$recommendedTechniques = [
+    'Nihonga' => [
+        'Bleistift/Kohle',
+        'Pastell',
+        'Aquarell',
+        'Wasserfarben',
+        'Mineralfarben'
+    ]
 ];
 
 // Verarbeite Form-Eingaben
@@ -98,15 +110,55 @@ if ($selectedFormat && $selectedStyle && $selectedTechnique) {
                 <a href="?step=style&format=<?= urlencode($selectedFormat) ?>" class="back-btn">← Zurück</a>
                 <h1>Wähle Maltechnik</h1>
                 <p class="subtitle">Die Technik bestimmt das Aussehen und die Textur</p>
-                <div class="styles-grid">
-                    <?php foreach ($techniques as $techniqueName => $technique): ?>
-                        <a href="?step=result&format=<?= urlencode($selectedFormat) ?>&style=<?= urlencode($selectedStyle) ?>&technique=<?= urlencode($techniqueName) ?>" 
-                           class="technique-btn <?= $technique['class'] ?>">
-                            <div class="style-icon"><?= $technique['icon'] ?></div>
-                            <div class="style-name"><?= $techniqueName ?></div>
-                        </a>
-                    <?php endforeach; ?>
-                </div>
+                
+                <?php
+                // Techniken in empfohlen/nicht empfohlen unterteilen
+                $recommended = [];
+                $notRecommended = [];
+                
+                if (isset($recommendedTechniques[$selectedStyle])) {
+                    foreach ($techniques as $technique => $data) {
+                        if (in_array($technique, $recommendedTechniques[$selectedStyle])) {
+                            $recommended[$technique] = $data;
+                        } else {
+                            $notRecommended[$technique] = $data;
+                        }
+                    }
+                } else {
+                    // Fallback: alle als empfohlen wenn kein Stil definiert
+                    $recommended = $techniques;
+                }
+                ?>
+
+                <?php if (!empty($recommended)): ?>
+                    <div class="technique-category">
+                        <h2 class="category-title">✅ Empfohlen</h2>
+                        <div class="styles-grid">
+                            <?php foreach ($recommended as $technique => $data): ?>
+                                <a href="?step=result&format=<?= urlencode($selectedFormat) ?>&style=<?= urlencode($selectedStyle) ?>&technique=<?= urlencode($technique) ?>" 
+                                   class="style-btn <?= htmlspecialchars($data['class']) ?>">
+                                    <span class="icon"><?= $data['icon'] ?></span>
+                                    <span><?= htmlspecialchars($technique) ?></span>
+                                </a>
+                            <?php endforeach; ?>
+                        </div>
+                    </div>
+                <?php endif; ?>
+
+                <?php if (!empty($notRecommended)): ?>
+                    <div class="technique-category not-recommended">
+                        <h2 class="category-title">⚠️ Nicht empfohlen</h2>
+                        <div class="styles-grid">
+                            <?php foreach ($notRecommended as $technique => $data): ?>
+                                <a href="?step=result&format=<?= urlencode($selectedFormat) ?>&style=<?= urlencode($selectedStyle) ?>&technique=<?= urlencode($technique) ?>" 
+                                   class="style-btn <?= htmlspecialchars($data['class']) ?> not-recommended-technique">
+                                    <span class="icon"><?= $data['icon'] ?></span>
+                                    <span><?= htmlspecialchars($technique) ?></span>
+                                </a>
+                            <?php endforeach; ?>
+                        </div>
+                    </div>
+                <?php endif; ?>
             </div>
 
         <?php elseif ($currentStep === 'result'): ?>
@@ -205,8 +257,6 @@ if ($selectedFormat && $selectedStyle && $selectedTechnique) {
                 showManualCopy(prompt);
             });
         }
-
-        
 
         function showManualCopy(prompt) {
             const modal = document.createElement('div');
