@@ -137,8 +137,8 @@ if ($selectedFormat && $selectedStyle && $selectedTechnique) {
                             <?php foreach ($recommended as $technique => $data): ?>
                                 <a href="?step=result&format=<?= urlencode($selectedFormat) ?>&style=<?= urlencode($selectedStyle) ?>&technique=<?= urlencode($technique) ?>" 
                                    class="style-btn <?= htmlspecialchars($data['class']) ?>">
-                                    <span class="icon"><?= $data['icon'] ?></span>
-                                    <span><?= htmlspecialchars($technique) ?></span>
+                                    <div class="style-icon"><?= $data['icon'] ?></div>
+                                    <div class="style-name"><?= htmlspecialchars($technique) ?></div>
                                 </a>
                             <?php endforeach; ?>
                         </div>
@@ -152,8 +152,8 @@ if ($selectedFormat && $selectedStyle && $selectedTechnique) {
                             <?php foreach ($notRecommended as $technique => $data): ?>
                                 <a href="?step=result&format=<?= urlencode($selectedFormat) ?>&style=<?= urlencode($selectedStyle) ?>&technique=<?= urlencode($technique) ?>" 
                                    class="style-btn <?= htmlspecialchars($data['class']) ?> not-recommended-technique">
-                                    <span class="icon"><?= $data['icon'] ?></span>
-                                    <span><?= htmlspecialchars($technique) ?></span>
+                                    <div class="style-icon"><?= $data['icon'] ?></div>
+                                    <div class="style-name"><?= htmlspecialchars($technique) ?></div>
                                 </a>
                             <?php endforeach; ?>
                         </div>
