@@ -33,8 +33,7 @@ $techniques = [
     'Collage' => ['icon' => '📰', 'class' => 'collage'],
     'Spraypaint' => ['icon' => '🎯', 'class' => 'spraypaint'],
     'Siebdruck' => ['icon' => '🖨️', 'class' => 'siebdruck'],
-    'Digital Painting' => ['icon' => '💻', 'class' => 'digital'],
-    'Mineralfarben' => ['icon' => '⛏️', 'class' => 'mineralfarben']
+    'Digital Painting' => ['icon' => '💻', 'class' => 'digital']
 ];
 
 // Stilspezifische Techniken (zusätzlich zu den allgemeinen Techniken)
@@ -131,6 +130,9 @@ if ($selectedFormat && $selectedStyle && $selectedTechnique) {
                             $recommendedGeneral[$technique] = $techniques[$technique];
                         }
                     }
+                } else {
+                    // Falls kein Stil definiert ist, alle allgemeinen Techniken als empfohlen anzeigen
+                    $recommendedGeneral = $techniques;
                 }
                 
                 // Stilspezifische Techniken
@@ -141,31 +143,19 @@ if ($selectedFormat && $selectedStyle && $selectedTechnique) {
                 
                 // Nicht empfohlene allgemeine Techniken
                 $notRecommendedGeneral = [];
-                foreach ($techniques as $technique => $data) {
-                    if (!isset($recommendedGeneral[$technique])) {
-                        $notRecommendedGeneral[$technique] = $data;
+                if (isset($recommendedTechniques[$selectedStyle])) {
+                    foreach ($techniques as $technique => $data) {
+                        if (!isset($recommendedGeneral[$technique])) {
+                            $notRecommendedGeneral[$technique] = $data;
+                        }
                     }
                 }
                 ?>
 
-                <?php if (!empty($recommendedGeneral)): ?>
-                    <div class="technique-category">
-                        <h2 class="category-title">✅ Empfohlen</h2>
-                        <div class="styles-grid">
-                            <?php foreach ($recommendedGeneral as $technique => $data): ?>
-                                <a href="?step=result&format=<?= urlencode($selectedFormat) ?>&style=<?= urlencode($selectedStyle) ?>&technique=<?= urlencode($technique) ?>" 
-                                   class="style-btn <?= htmlspecialchars($data['class']) ?>">
-                                    <div class="style-icon"><?= $data['icon'] ?></div>
-                                    <div class="style-name"><?= htmlspecialchars($technique) ?></div>
-                                </a>
-                            <?php endforeach; ?>
-                        </div>
-                    </div>
-                <?php endif; ?>
-
+                <!-- Stilspezifische Techniken (nur wenn vorhanden) -->
                 <?php if (!empty($styleSpecific)): ?>
                     <div class="technique-category special-techniques">
-                        <h2 class="category-title">🌟 Stilspezifische Techniken</h2>
+                        <h2 class="category-title">🌟 Stilspezifisch</h2>
                         <div class="styles-grid">
                             <?php foreach ($styleSpecific as $technique => $data): ?>
                                 <a href="?step=result&format=<?= urlencode($selectedFormat) ?>&style=<?= urlencode($selectedStyle) ?>&technique=<?= urlencode($technique) ?>" 
@@ -183,6 +173,7 @@ if ($selectedFormat && $selectedStyle && $selectedTechnique) {
                     </div>
                 <?php endif; ?>
 
+                <!-- Empfohlene allgemeine Techniken -->
                 <?php if (!empty($recommendedGeneral)): ?>
                     <div class="technique-category">
                         <h2 class="category-title">✅ Empfohlen</h2>
@@ -198,6 +189,7 @@ if ($selectedFormat && $selectedStyle && $selectedTechnique) {
                     </div>
                 <?php endif; ?>
 
+                <!-- Nicht empfohlene allgemeine Techniken -->
                 <?php if (!empty($notRecommendedGeneral)): ?>
                     <div class="technique-category not-recommended">
                         <h2 class="category-title">⚠️ Nicht empfohlen</h2>
