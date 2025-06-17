@@ -40,11 +40,11 @@ $techniques = [
 // Stilspezifische Techniken (zusätzlich zu den allgemeinen Techniken)
 $styleSpecificTechniques = [
     'Nihonga' => [
-        'Mineralfarbenmalerei - 岩絵具 (Iwa-enogu)' => ['icon' => '🗻', 'class' => 'iwa-enogu'],
-        'Tuschemalerei - 墨絵 (Sumi-e)' => ['icon' => '🖋️', 'class' => 'sumi-e'],
-        'Malen mit Muschelkalk - 胡粉 (Gofun)' => ['icon' => '🐚', 'class' => 'gofun'],
-        'Blattgold-Verzierung - 金箔 (Kin-paku)' => ['icon' => '🥇', 'class' => 'kin-paku'],
-        'Tropftechnik - たらし込み (Tarashikomi)' => ['icon' => '💧', 'class' => 'tarashikomi']
+        'Mineralfarben' => ['icon' => '🗻', 'class' => 'iwa-enogu', 'subtitle' => '岩絵具 (Iwa-enogu)'],
+        'Tusche' => ['icon' => '🖋️', 'class' => 'sumi-e', 'subtitle' => '墨絵 (Sumi-e)'],
+        'Muschelkalk' => ['icon' => '🐚', 'class' => 'gofun', 'subtitle' => '胡粉 (Gofun)'],
+        'Blattgold' => ['icon' => '🥇', 'class' => 'kin-paku', 'subtitle' => '金箔 (Kin-paku)'],
+        'Tropftechnik' => ['icon' => '💧', 'class' => 'tarashikomi', 'subtitle' => 'たらし込み (Tarashikomi)']
     ]
 ];
 
@@ -133,7 +133,7 @@ if ($selectedFormat && $selectedStyle && $selectedTechnique) {
                     }
                 }
                 
-                // Stilspezifische Techniken (automatisch empfohlen)
+                // Stilspezifische Techniken
                 $styleSpecific = [];
                 if (isset($styleSpecificTechniques[$selectedStyle])) {
                     $styleSpecific = $styleSpecificTechniques[$selectedStyle];
@@ -148,11 +148,10 @@ if ($selectedFormat && $selectedStyle && $selectedTechnique) {
                 }
                 ?>
 
-                <?php if (!empty($recommendedGeneral) || !empty($styleSpecific)): ?>
+                <?php if (!empty($recommendedGeneral)): ?>
                     <div class="technique-category">
                         <h2 class="category-title">✅ Empfohlen</h2>
                         <div class="styles-grid">
-                            <!-- Empfohlene allgemeine Techniken -->
                             <?php foreach ($recommendedGeneral as $technique => $data): ?>
                                 <a href="?step=result&format=<?= urlencode($selectedFormat) ?>&style=<?= urlencode($selectedStyle) ?>&technique=<?= urlencode($technique) ?>" 
                                    class="style-btn <?= htmlspecialchars($data['class']) ?>">
@@ -160,11 +159,37 @@ if ($selectedFormat && $selectedStyle && $selectedTechnique) {
                                     <div class="style-name"><?= htmlspecialchars($technique) ?></div>
                                 </a>
                             <?php endforeach; ?>
-                            
-                            <!-- Stilspezifische Techniken -->
+                        </div>
+                    </div>
+                <?php endif; ?>
+
+                <?php if (!empty($styleSpecific)): ?>
+                    <div class="technique-category special-techniques">
+                        <h2 class="category-title">🌟 Stilspezifische Techniken</h2>
+                        <div class="styles-grid">
                             <?php foreach ($styleSpecific as $technique => $data): ?>
                                 <a href="?step=result&format=<?= urlencode($selectedFormat) ?>&style=<?= urlencode($selectedStyle) ?>&technique=<?= urlencode($technique) ?>" 
                                    class="style-btn <?= htmlspecialchars($data['class']) ?> style-specific">
+                                    <div class="style-icon"><?= $data['icon'] ?></div>
+                                    <div class="style-name">
+                                        <?= htmlspecialchars($technique) ?>
+                                        <?php if (isset($data['subtitle'])): ?>
+                                            <span class="japanese-subtitle"><?= htmlspecialchars($data['subtitle']) ?></span>
+                                        <?php endif; ?>
+                                    </div>
+                                </a>
+                            <?php endforeach; ?>
+                        </div>
+                    </div>
+                <?php endif; ?>
+
+                <?php if (!empty($recommendedGeneral)): ?>
+                    <div class="technique-category">
+                        <h2 class="category-title">✅ Empfohlen</h2>
+                        <div class="styles-grid">
+                            <?php foreach ($recommendedGeneral as $technique => $data): ?>
+                                <a href="?step=result&format=<?= urlencode($selectedFormat) ?>&style=<?= urlencode($selectedStyle) ?>&technique=<?= urlencode($technique) ?>" 
+                                   class="style-btn <?= htmlspecialchars($data['class']) ?>">
                                     <div class="style-icon"><?= $data['icon'] ?></div>
                                     <div class="style-name"><?= htmlspecialchars($technique) ?></div>
                                 </a>

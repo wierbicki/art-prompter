@@ -574,3 +574,11 @@
  .not-recommended {
         margin-top: 30px;
  }
+
+ .japanese-subtitle {
+    display: block;
+    font-size: 0.7em !important;
+    font-weight: 400 !important;
+    opacity: 0.8;
+    margin-top: 2px;
+ }
