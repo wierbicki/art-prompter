@@ -1,4 +1,10 @@
 <?php
+// Am Anfang der index.php - Prompt-Historie aus Cookie laden
+$promptHistory = [];
+if (isset($_COOKIE['prompt_history'])) {
+    $promptHistory = json_decode($_COOKIE['prompt_history'], true) ?: [];
+}
+
 // Definiere verfügbare Optionen
 $formats = [
     '1:2' => ['icon' => '📱', 'label' => 'Hochformat'],
@@ -66,9 +72,22 @@ $selectedTechnique = $_GET['technique'] ?? '';
 
 // Generiere Prompt wenn alle Optionen ausgewählt sind
 $generatedPrompt = '';
+$chatgptUrl = '';
 if ($selectedFormat && $selectedStyle && $selectedTechnique) {
     $formatLabel = $formats[$selectedFormat]['label'];
     $generatedPrompt = "Transformiere dieses Bild im Stil der Richtung {$selectedStyle} als {$selectedTechnique} im {$formatLabel}.";
+    
+    // Neuen Prompt zur Historie hinzufügen (nur wenn anders als der letzte)
+    if (empty($promptHistory) || end($promptHistory) !== $generatedPrompt) {
+        $promptHistory[] = $generatedPrompt;
+        // Nur die letzten 3 behalten (damit nach Filterung 2 übrig bleiben)
+        $promptHistory = array_slice($promptHistory, -3);
+        
+        // Cookie für 30 Tage setzen
+        setcookie('prompt_history', json_encode($promptHistory), time() + (30 * 24 * 60 * 60), '/');
+    }
+    
+    $chatgptUrl = "https://chatgpt.com/?q=" . urlencode($generatedPrompt);
 }
 ?>
 <!DOCTYPE html>
@@ -231,11 +250,11 @@ if ($selectedFormat && $selectedStyle && $selectedTechnique) {
                 </div>
 
                 <div class="action-buttons">
-                    <button class="action-btn copy-btn" onclick="copyPrompt('<?= htmlspecialchars($generatedPrompt) ?>')">
+                    <button class="action-btn copy-btn" onclick="copyPrompt('<?= htmlspecialchars($generatedPrompt, ENT_QUOTES) ?>')">
                         <span class="btn-icon">📋</span>
                         <span>Prompt kopieren</span>
                     </button>
-                    <a href="chatgpt://?prompt=<?= urlencode($generatedPrompt) ?>" class="action-btn chatgpt-btn" target="_blank">
+                    <a href="<?= htmlspecialchars($chatgptUrl) ?>" class="action-btn chatgpt-btn" target="_blank">
                         <span class="btn-icon">💬</span>
                         <span>ChatGPT öffnen</span>
                     </a>
@@ -269,15 +288,61 @@ if ($selectedFormat && $selectedStyle && $selectedTechnique) {
                         <div class="dropdown-group">
                             <label for="techniqueSelect">🖌️ Technik:</label>
                             <select id="techniqueSelect" class="edit-dropdown" onchange="changeTechnique(this.value)">
+                                <!-- Allgemeine Techniken -->
                                 <?php foreach ($techniques as $techniqueName => $technique): ?>
                                     <option value="<?= htmlspecialchars($techniqueName) ?>" <?= $techniqueName === $selectedTechnique ? 'selected' : '' ?>>
                                         <?= htmlspecialchars($techniqueName) ?>
                                     </option>
                                 <?php endforeach; ?>
+                                
+                                <!-- Stilspezifische Techniken falls vorhanden -->
+                                <?php if (isset($styleSpecificTechniques[$selectedStyle])): ?>
+                                    <?php foreach ($styleSpecificTechniques[$selectedStyle] as $techniqueName => $technique): ?>
+                                        <option value="<?= htmlspecialchars($techniqueName) ?>" <?= $techniqueName === $selectedTechnique ? 'selected' : '' ?>>
+                                            <?= htmlspecialchars($techniqueName) ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                <?php endif; ?>
                             </select>
                         </div>
                     </div>
                 </div>
+
+                <!-- Prompt-Historie am Ende -->
+                <?php if (count($promptHistory) > 1): ?>
+                    <div class="prompt-history">
+                        <h3>📚 Letzte Prompts</h3>
+                        <div class="history-list">
+                            <?php 
+                            // Zeige die letzten 2 Prompts (außer dem aktuellen)
+                            $historyToShow = array_reverse($promptHistory);
+                            $shown = 0;
+                            foreach ($historyToShow as $oldPrompt): 
+                                if ($oldPrompt !== $generatedPrompt && $shown < 2): 
+                                    $shown++;
+                            ?>
+                                <div class="history-item">
+                                    <div class="history-prompt-text">
+                                        <?= htmlspecialchars($oldPrompt) ?>
+                                    </div>
+                                    <div class="history-actions">
+                                        <button onclick="copyPrompt('<?= htmlspecialchars($oldPrompt, ENT_QUOTES) ?>')" class="action-btn history-copy-btn">
+                                            <span class="btn-icon">📋</span>
+                                            <span>Kopieren</span>
+                                        </button>
+                                        <a href="https://chatgpt.com/?q=<?= urlencode($oldPrompt) ?>" target="_blank" class="action-btn history-chatgpt-btn">
+                                            <span class="btn-icon">💬</span>
+                                            <span>ChatGPT</span>
+                                        </a>
+                                    </div>
+                                </div>
+                            <?php 
+                                endif; 
+                            endforeach; 
+                            ?>
+                        </div>
+                    </div>
+                <?php endif; ?>
 
                 <div style="margin-top: 30px; text-align: center;">
                     <a href="?step=format" class="back-btn">🔄 Neuen Prompt erstellen</a>
@@ -289,7 +354,7 @@ if ($selectedFormat && $selectedStyle && $selectedTechnique) {
     <script>
         function copyPrompt(prompt) {
             navigator.clipboard.writeText(prompt).then(() => {
-                const copyBtn = document.querySelector('.copy-btn');
+                const copyBtn = event.target.closest('.copy-btn, .history-copy-btn');
                 const originalHTML = copyBtn.innerHTML;
                 copyBtn.classList.add('copied');
                 copyBtn.innerHTML = '<span class="btn-icon">✓</span><span>Kopiert!</span>';
