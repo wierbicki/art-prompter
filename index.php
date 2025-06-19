@@ -80,7 +80,7 @@ if ($selectedFormat && $selectedStyle && $selectedTechnique) {
     // Neuen Prompt zur Historie hinzufügen (nur wenn anders als der letzte)
     if (empty($promptHistory) || end($promptHistory) !== $generatedPrompt) {
         $promptHistory[] = $generatedPrompt;
-        // Nur die letzten 3 behalten (damit nach Filterung 2 übrig bleiben)
+        // Nur die letzten 3 behalten
         $promptHistory = array_slice($promptHistory, -3);
         
         // Cookie für 30 Tage setzen
@@ -106,6 +106,37 @@ if ($selectedFormat && $selectedStyle && $selectedTechnique) {
             <div class="screen active">
                 <h1>Art Prompter</h1>
                 <p class="subtitle">Wähle Bildformat</p>
+                
+                <!-- Prompt-Historie ganz am Anfang -->
+                <?php if (!empty($promptHistory)): ?>
+                    <div class="prompt-history">
+                        <h3>📚 Letzte Prompts</h3>
+                        <div class="history-list">
+                            <?php 
+                            // Zeige die letzten 3 Prompts (neueste zuerst)
+                            $historyToShow = array_reverse($promptHistory);
+                            foreach ($historyToShow as $oldPrompt): 
+                            ?>
+                                <div class="history-item">
+                                    <div class="history-prompt-text">
+                                        <?= htmlspecialchars($oldPrompt) ?>
+                                    </div>
+                                    <div class="history-actions">
+                                        <button onclick="copyPrompt('<?= htmlspecialchars($oldPrompt, ENT_QUOTES) ?>')" class="action-btn history-copy-btn">
+                                            <span class="btn-icon">📋</span>
+                                            <span>Kopieren</span>
+                                        </button>
+                                        <a href="https://chatgpt.com/?q=<?= urlencode($oldPrompt) ?>" target="_blank" class="action-btn history-chatgpt-btn">
+                                            <span class="btn-icon">💬</span>
+                                            <span>ChatGPT</span>
+                                        </a>
+                                    </div>
+                                </div>
+                            <?php endforeach; ?>
+                        </div>
+                    </div>
+                <?php endif; ?>
+                
                 <div class="format-buttons">
                     <?php foreach ($formats as $formatKey => $format): ?>
                         <a href="?step=style&format=<?= urlencode($formatKey) ?>" class="format-btn">
@@ -307,42 +338,6 @@ if ($selectedFormat && $selectedStyle && $selectedTechnique) {
                         </div>
                     </div>
                 </div>
-
-                <!-- Prompt-Historie am Ende -->
-                <?php if (count($promptHistory) > 1): ?>
-                    <div class="prompt-history">
-                        <h3>📚 Letzte Prompts</h3>
-                        <div class="history-list">
-                            <?php 
-                            // Zeige die letzten 2 Prompts (außer dem aktuellen)
-                            $historyToShow = array_reverse($promptHistory);
-                            $shown = 0;
-                            foreach ($historyToShow as $oldPrompt): 
-                                if ($oldPrompt !== $generatedPrompt && $shown < 2): 
-                                    $shown++;
-                            ?>
-                                <div class="history-item">
-                                    <div class="history-prompt-text">
-                                        <?= htmlspecialchars($oldPrompt) ?>
-                                    </div>
-                                    <div class="history-actions">
-                                        <button onclick="copyPrompt('<?= htmlspecialchars($oldPrompt, ENT_QUOTES) ?>')" class="action-btn history-copy-btn">
-                                            <span class="btn-icon">📋</span>
-                                            <span>Kopieren</span>
-                                        </button>
-                                        <a href="https://chatgpt.com/?q=<?= urlencode($oldPrompt) ?>" target="_blank" class="action-btn history-chatgpt-btn">
-                                            <span class="btn-icon">💬</span>
-                                            <span>ChatGPT</span>
-                                        </a>
-                                    </div>
-                                </div>
-                            <?php 
-                                endif; 
-                            endforeach; 
-                            ?>
-                        </div>
-                    </div>
-                <?php endif; ?>
 
                 <div style="margin-top: 30px; text-align: center;">
                     <a href="?step=format" class="back-btn">🔄 Neuen Prompt erstellen</a>
